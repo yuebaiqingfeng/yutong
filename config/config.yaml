@@ -1,0 +1,19 @@
+# 服务配置
+server_port: "8688"
+
+# 模型配置
+models:
+  - name: "GPT-3.5"
+    base_url: "https://dashscope.aliyuncs.com/compatible-mode/v1"
+    api_key: "sk-980acd8a55484943b7176e03506eda71"
+    model_id: "gpt-3.5-turbo"
+  - name: "GPT-4"
+    base_url: "https://api.openai.com/v1"
+    api_key: "your-api-key-here"
+    model_id: "gpt-4"
+
+# OneBot配置
+onebot:
+  enable: true
+  url: "ws://localhost:6700"
+  token: "your-onebot-token"

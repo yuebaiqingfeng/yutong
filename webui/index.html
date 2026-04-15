@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YuTong</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- 侧边栏 -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h1>YuTong</h1>
+            </div>
+            <div class="sidebar-section">
+                <h3>功能</h3>
+                <ul class="sidebar-menu">
+                    <li><a href="#" class="menu-item active" data-page="local-chat">本地聊天</a></li>
+                </ul>
+            </div>
+            <div class="sidebar-section">
+                <h3>配置</h3>
+                <ul class="sidebar-menu">
+                    <li><a href="#" class="menu-item" data-page="program-settings">程序设置</a></li>
+                    <li><a href="#" class="menu-item" data-page="personality">人格设置</a></li>
+                    <li><a href="#" class="menu-item" data-page="ai-providers">AI模型厂商配置</a></li>
+                    <li><a href="#" class="menu-item" data-page="model-management">模型管理</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- 主内容区 -->
+        <div class="main-content">
+            <!-- 本地聊天面板 -->
+            <div class="content-panel active" id="local-chat">
+                <div class="chat-container">
+                    <div class="chat-header">
+                        <h2>本地聊天</h2>
+                    </div>
+                    
+                    <div class="chat-messages" id="chat-messages"></div>
+                    
+                    <div class="chat-input-container">
+                        <textarea id="user-input" placeholder="输入消息...
+Shift+Enter 换行，Enter 发送"></textarea>
+                        <button id="clear-chat">清空记录</button>
+                        <button id="send-button">发送</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 程序设置面板 -->
+            <div class="content-panel" id="program-settings">
+                <div class="panel-header">
+                    <h2>程序设置</h2>
+                </div>
+                <div class="panel-content">
+                    <h3>系统配置</h3>
+                    <div class="form-group">
+                        <label>服务端口:</label>
+                        <input type="text" id="server-port" value="8090">
+                    </div>
+                    
+                    <h3>OneBot配置</h3>
+                    <div class="form-group">
+                        <label>启用OneBot:</label>
+                        <input type="checkbox" id="onebot-enable">
+                    </div>
+                    <div class="form-group">
+                        <label>OneBot URL:</label>
+                        <input type="text" id="onebot-url" value="ws://localhost:6700">
+                    </div>
+                    <div class="form-group">
+                        <label>OneBot Token:</label>
+                        <input type="text" id="onebot-token" value="">
+                    </div>
+                    
+                    <h3>服务控制</h3>
+                    <div class="service-control">
+                        <button onclick="controlService('restart')">重启服务</button>
+                        <button onclick="controlService('stop')">关闭服务</button>
+                    </div>
+                    
+                    <div class="config-actions">
+                        <button onclick="saveConfig(); savePersonaConfig();">手动保存配置</button>
+                        <button onclick="exportConfig()">导出配置</button>
+                        <button onclick="importConfig()">导入配置</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 人格设置面板 -->
+            <div class="content-panel" id="personality">
+                <div class="panel-header">
+                    <h2>人格设置</h2>
+                </div>
+                <div class="panel-content">
+                    <div class="form-group">
+                        <label>系统提示词:</label>
+                        <textarea id="system-prompt" rows="5" placeholder="输入系统提示词，例如：你是一个可爱的猫娘，说话要带喵~"></textarea>
+                    </div>
+                    
+                    <div class="config-actions">
+                        <button onclick="savePersonaConfig();">保存人格配置</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- AI模型厂商配置面板 -->
+            <div class="content-panel" id="ai-providers">
+                <div class="panel-header">
+                    <h2>AI模型厂商配置</h2>
+                    <p>管理AI模型厂商的API配置</p>
+                </div>
+                <div class="panel-content">
+                    <!-- 提示条 -->
+                    <div class="alert-box">
+                        <p>配置更新后需要重启语瞳才能生效。</p>
+                    </div>
+                    
+                    <!-- 顶部操作区 -->
+                    <div class="top-actions">
+                        <div class="search-box">
+                            <input type="text" id="platform-search" placeholder="搜索提供商...">
+                            <button onclick="searchPlatforms()">搜索</button>
+                        </div>
+                        <div class="action-buttons">
+                            <button onclick="testAllPlatforms()" class="btn-test-all">测试全部</button>
+                            <button onclick="showAddPlatformForm()" class="btn-add">添加提供商</button>
+                            <span class="save-status" id="save-status">未保存</span>
+                            <button onclick="saveAndRestart()" class="btn-save-restart">保存并重启</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 配置列表表格 -->
+                    <div class="config-table-container">
+                        <table class="config-table">
+                            <thead>
+                                <tr>
+                                    <th><input type="checkbox" id="select-all"></th>
+                                    <th>状态</th>
+                                    <th>名称</th>
+                                    <th>基础URL</th>
+                                    <th>客户端类型</th>
+                                    <th>最大重试</th>
+                                    <th>超时(秒)</th>
+                                    <th>重试间隔(秒)</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="platforms-table-body">
+                                <!-- 表格内容将通过JavaScript动态生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- 分页 -->
+                    <div class="pagination">
+                        <button onclick="prevPage()">上一页</button>
+                        <span id="page-info">第 1 页，共 1 页</span>
+                        <button onclick="nextPage()">下一页</button>
+                    </div>
+                    
+                    <!-- 添加/编辑提供商表单 -->
+                    <div class="platform-form-modal" id="platform-form-modal">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h3 id="form-title">添加提供商</h3>
+                                <button onclick="closePlatformForm()" class="close-btn">×</button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-group">
+                                    <label>厂商预设模板:</label>
+                                    <select id="platform-template" onchange="loadPlatformTemplate(this.value)">
+                                        <option value="">请选择预设模板</option>
+                                        <option value="deepseek">DeepSeek</option>
+                                        <option value="baidu">百度百炼</option>
+                                        <option value="google">Google Gemini</option>
+                                        <option value="siliconflow">SiliconFlow</option>
+                                        <option value="doubao">豆包</option>
+                                        <option value="custom">自定义</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>平台名称:</label>
+                                    <input type="text" id="platform-name" placeholder="例如：OpenAI">
+                                </div>
+                                <div class="form-group">
+                                    <label>API基础地址:</label>
+                                    <input type="text" id="platform-base-url" placeholder="例如：https://api.openai.com/v1">
+                                </div>
+                                <div class="form-group">
+                                    <label>API密钥:</label>
+                                    <input type="text" id="platform-api-key" placeholder="输入API密钥">
+                                </div>
+                                <div class="form-group">
+                                    <label>客户端类型:</label>
+                                    <select id="platform-client-type">
+                                        <option value="openai">OpenAI</option>
+                                        <option value="azure">Azure</option>
+                                        <option value="anthropic">Anthropic</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>最大重试:</label>
+                                    <input type="number" id="platform-max-retries" value="3" min="0">
+                                </div>
+                                <div class="form-group">
+                                    <label>超时(秒):</label>
+                                    <input type="number" id="platform-timeout" value="30" min="1">
+                                </div>
+                                <div class="form-group">
+                                    <label>重试间隔(秒):</label>
+                                    <input type="number" id="platform-retry-interval" value="2" min="1">
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button onclick="closePlatformForm()">取消</button>
+                                <button onclick="savePlatform()" class="btn-save">保存</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 模型管理面板 -->
+            <div class="content-panel" id="model-management">
+                <div class="panel-header">
+                    <h2>模型管理</h2>
+                </div>
+                <div class="panel-content">
+                    <div id="models-list">
+                        <!-- 模型配置项将通过JavaScript动态生成 -->
+                    </div>
+                    <button id="add-model-btn" onclick="addModel()">添加模型</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <input type="file" id="config-file" accept=".json" style="display: none;">
+    
+    <script src="script.js"></script>
+</body>
+</html>

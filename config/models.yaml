@@ -1,0 +1,18 @@
+# 模型配置
+models:
+  - name: "GPT-3.5"
+    base_url: "https://dashscope.aliyuncs.com/compatible-mode/v1"
+    api_key: "sk-980acd8a55484943b7176e03506eda71"
+    model_id: "gpt-3.5-turbo"
+    client_type: "openai"
+    max_retries: 3
+    timeout: 30
+    retry_interval: 2
+  - name: "GPT-4"
+    base_url: "https://api.openai.com/v1"
+    api_key: "your-api-key-here"
+    model_id: "gpt-4"
+    client_type: "openai"
+    max_retries: 3
+    timeout: 30
+    retry_interval: 2
